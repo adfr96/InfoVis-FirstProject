@@ -42,6 +42,12 @@ var var_color = {
     "x3" : "red",
     "x4" : "purple"
 };
+var var_comp = {
+    "x1" : comp_x1,
+    "x2" : comp_x2,
+    "x3" : comp_x3,
+    "x4" : comp_x4
+}
 var variables = ["x1","x2","x3","x4"];
 
 var x = d3.scaleBand().rangeRound([0, chart_width]).padding(0.2);
@@ -103,10 +109,53 @@ function drawBar(data,variable){
       .attr("transform", "translate("+tx.y_tx+"," + tx.y_ty+ ")");
 
 }
+function comp_x1(v1,v2){
+    if(v1.x1>v2.x1){
+      return -1
+    }
+    else if(v2.x1>v1.x1){
+      return 1
+    }
+    return 0
+  }
+function comp_x2(v1,v2){
+    if(v1.x2>v2.x2){
+        return -1
+    }
+    else if(v2.x2>v1.x2){
+        return 1
+    }
+    return 0
+}
+function comp_x3(v1,v2){
+    if(v1.x3>v2.x3){
+        return -1
+    }
+    else if(v2.x3>v1.x3){
+        return 1
+    }
+    return 0
+}
+function comp_x4(v1,v2){
+    if(v1.x4>v2.x4){
+        return -1
+    }
+    else if(v2.x4>v1.x4){
+        return 1
+    }
+    return 0
+}
+function sortData(data,variable){
+    data.sort(var_comp[variable])
+}
 
 d3.json("data.json").then(function(data) {
+    sortData(data,"x2")
     updateXScaleDomain(data)
+
     for(v of variables){
+        //sortData(data,v)
+        updateXScaleDomain(data)
         updateYScaleDomain(data,v)
         drawAxes(v)
         drawBar(data,v)
