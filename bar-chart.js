@@ -72,9 +72,9 @@ function updateYScaleDomain(data, variable){
     y.domain([0, d3.max(data, function(d) { return d[variable]; })]);
 }
 
-function drawAxes(variable){
+function drawAxes(variable,chart){
     var tx = var_tx[variable]
-    svg.append("g")
+    chart.append("g")
     .attr("class", "x axis")
     .attr("transform", "translate("+tx.x_tx+"," + tx.x_ty+ ")")
     .call(xAxis)
@@ -83,7 +83,7 @@ function drawAxes(variable){
     .attr("dx", "3")
     .attr("dy", "5.5");
 
-    svg.append("g")
+    chart.append("g")
       .attr("class", "y axis")
       .attr("transform", "translate("+tx.y_tx+"," + tx.y_ty+ ")")
       .call(yAxis)
@@ -92,22 +92,51 @@ function drawAxes(variable){
       .attr("y", 6)
       .attr("dy", ".71em")
       .style("text-anchor", "end");
+      // add a label along the y-axis
+        //
+        chart.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("transform", "translate("+tx.y_tx+"," + (tx.y_ty-intra_margin.y/4)+ ")")
+        .attr("y", 6)
+        .attr("font-size","15px")
+        .style("text-anchor", "end")
+        .text(variable);
 
 }
-
-function drawBar(data,variable){
+function drowBack(chart,variable){
+    var tx = var_tx[variable]
+    chart.append("rect")
+        .style("fill", "white")
+        .attr("x",tx.x_tx)
+        .attr("y",tx.y_ty)
+        .attr("width", chart_width)
+        .attr("height", chart_height);
+}
+function drawBar(data,variable,chart){
     var tx = var_tx[variable]
 
-    svg.selectAll("bar")
-      .data(data)
-      .enter().append("rect")
-      .style("fill", var_color[variable])
-      .attr("x", function(d) { return x(d.id); })
-      .attr("width", x.bandwidth())
-      .attr("y", function(d) { return y(d[variable]); })
-      .attr("height", function(d) { return chart_height - y(d[variable]); })
-      .attr("transform", "translate("+tx.y_tx+"," + tx.y_ty+ ")");
+    var bars = chart.selectAll(".bar").exit().remove().data(data);
 
+    bars.enter().append("rect")
+        .attr("class", "bar-"+variable)
+        .style("fill", var_color[variable])
+        .attr("x", function(d) { return x(d.id); })
+        .attr("width", x.bandwidth())
+        .attr("y", function(d) { return y(d[variable]); })
+        .attr("height", function(d) { return chart_height - y(d[variable]); })
+        .attr("transform", "translate("+tx.y_tx+"," + tx.y_ty+ ")");
+
+    bars.transition().duration(updateTime)
+        .attr("x", function(d) { return x(d.id); })
+        .attr("width", x.bandwidth())
+        .attr("y", function(d) { return y(d[variable]); })
+        .attr("height", function(d) { return y(chart_height - d[variable]); })
+        .attr("transform", "translate("+tx.y_tx+"," + tx.y_ty+ ")");
+
+}
+function handleMouseOver(d,i){
+    d3.select(this)
+    .style("fill", "black")
 }
 function comp_x1(v1,v2){
     if(v1.x1>v2.x1){
@@ -148,16 +177,48 @@ function comp_x4(v1,v2){
 function sortData(data,variable){
     data.sort(var_comp[variable])
 }
+function draw_all(variable){
+    d3.json("data.json").then(function(data) {
+        sortData(data,variable)
+        
+        for(v of variables){
+            svg.selectAll(".chart-"+v).remove()
+            var chart = svg.append("g").attr("class", "chart-"+v)
+            .attr("var",v).on("click",sorting)
+            drowBack(chart,v)
+            updateXScaleDomain(data)
+            updateYScaleDomain(data,v)
+            drawAxes(v,chart)
+            drawBar(data,v,chart)
+        }
 
-d3.json("data.json").then(function(data) {
-    sortData(data,"x2")
-    updateXScaleDomain(data)
-
-    for(v of variables){
-        //sortData(data,v)
+    function sorting(){
+        variable = this.getAttribute("var")
+        data.sort(var_comp[variable])
+        console.log(data)
         updateXScaleDomain(data)
-        updateYScaleDomain(data,v)
-        drawAxes(v)
-        drawBar(data,v)
+        
+        var transition = svg.transition().duration(updateTime),
+        delay = function(d, i) { return i * 25; };
+        for(v of variables){
+            updateYScaleDomain(data,v)
+            transition.selectAll(".bar-"+v)
+                .delay(delay)
+                .attr("x", function(d) {  return x(d.id); })
+                //.attr("width", x.bandwidth())
+                .attr("y", function(d) { return y(d[v]); })
+                .attr("height", function(d) { return chart_height - y(d[v]); })
+        } 
+        transition.selectAll(".x.axis")
+            .call(xAxis)
+            .selectAll("g")
+            .delay(delay);
+        
     }
-});
+    });
+}
+function redraw(){
+    draw_all(this.getAttribute("var"))
+}
+draw_all();
+
