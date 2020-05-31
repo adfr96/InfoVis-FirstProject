@@ -56,7 +56,7 @@ var y = d3.scaleLinear().range([chart_height, 0]);
 
 var xAxis = d3.axisBottom(x);
 
-var yAxis = d3.axisLeft(y).ticks(10);
+var yAxis = d3.axisLeft(y).ticks(20);
     
 var svg = d3.select("body").append("svg")
     .attr("width", width + margin.left + margin.right)
@@ -130,11 +130,14 @@ function drawBar(data,variable,chart){
     bars.enter().append("rect")
         .attr("class", "bar-"+variable)
         .style("fill", var_color[variable])
+        .attr("value",function(d) { return d[variable]; })
         .attr("x", function(d) { return x(d.id); })
         .attr("width", x.bandwidth())
         .attr("y", function(d) { return y(d[variable]); })
         .attr("height", function(d) { return chart_height - y(d[variable]); })
-        .attr("transform", "translate("+tx.y_tx+"," + tx.y_ty+ ")");
+        .attr("transform", "translate("+tx.y_tx+"," + tx.y_ty+ ")")
+        .on("mouseover",handleMouseOverBars)
+        .on("mouseout",handleMouseOutBars);
     /*
     bars.transition().duration(updateTime)
         .attr("x", function(d) { return x(d.id); })
@@ -144,9 +147,18 @@ function drawBar(data,variable,chart){
         .attr("transform", "translate("+tx.y_tx+"," + tx.y_ty+ ")");
     */
 }
-function handleMouseOver(d,i){
-    d3.select(this)
-    .style("fill", "black")
+function handleMouseOverBars(d,i){
+    value = this.getAttribute("value")
+    x = d3.mouse(this)[0]
+    y = d3.mouse(this)[1]
+
+    svg.append("text")
+        .attr("class","value")
+        .attr("transform", "translate("+x+"," + y+ ")")
+        .text(value)
+}
+function handleMouseOutBars(d,i){
+    svg.select(".value").remove();
 }
 function comp_x1(v1,v2){
     if(v1.x1>v2.x1){
