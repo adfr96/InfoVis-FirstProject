@@ -135,9 +135,9 @@ function drawBar(data,variable,chart){
         .attr("width", x.bandwidth())
         .attr("y", function(d) { return y(d[variable]); })
         .attr("height", function(d) { return chart_height - y(d[variable]); })
-        .attr("transform", "translate("+tx.y_tx+"," + tx.y_ty+ ")")
-        .on("mouseover",handleMouseOverBars)
-        .on("mouseout",handleMouseOutBars);
+        .attr("transform", "translate("+tx.y_tx+"," + tx.y_ty+ ")");
+        //.on("mouseover",handleMouseOverBars)
+        //.on("mouseout",handleMouseOutBars);
     /*
     bars.transition().duration(updateTime)
         .attr("x", function(d) { return x(d.id); })
