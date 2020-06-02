@@ -136,16 +136,15 @@ function drawBar(data,variable,chart){
         .attr("y", function(d) { return y(d[variable]); })
         .attr("height", function(d) { return chart_height - y(d[variable]); })
         .attr("transform", "translate("+tx.y_tx+"," + tx.y_ty+ ")");
-        //.on("mouseover",handleMouseOverBars)
-        //.on("mouseout",handleMouseOutBars);
-    /*
+        
+    
     bars.transition().duration(updateTime)
         .attr("x", function(d) { return x(d.id); })
         .attr("width", x.bandwidth())
         .attr("y", function(d) { return y(d[variable]); })
         .attr("height", function(d) { return y(chart_height - d[variable]); })
         .attr("transform", "translate("+tx.y_tx+"," + tx.y_ty+ ")");
-    */
+    
 }
 function handleMouseOverBars(d,i){
     value = this.getAttribute("value")
@@ -160,6 +159,8 @@ function handleMouseOverBars(d,i){
 function handleMouseOutBars(d,i){
     svg.select(".value").remove();
 }
+
+
 function comp_x1(v1,v2){
     if(v1.x1>v2.x1){
       return -1
@@ -199,9 +200,9 @@ function comp_x4(v1,v2){
 function sortData(data,variable){
     data.sort(var_comp[variable])
 }
-function draw_all(variable){
+function draw_all(){
     d3.json("data.json").then(function(data) {
-        sortData(data,variable)
+        //sortData(data,variable)
         
         for(v of variables){
             svg.selectAll(".chart-"+v).remove()
@@ -216,8 +217,7 @@ function draw_all(variable){
 
     function sorting(){
         variable = this.getAttribute("var")
-        data.sort(var_comp[variable])
-        console.log(data)
+        sortData(data,variable)
         updateXScaleDomain(data)
         
         var transition = svg.transition().duration(updateTime),
@@ -238,8 +238,10 @@ function draw_all(variable){
     }
     });
 }
+/*
 function redraw(){
     draw_all(this.getAttribute("var"))
 }
+*/
 draw_all();
 
